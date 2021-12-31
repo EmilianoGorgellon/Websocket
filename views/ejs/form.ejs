@@ -71,27 +71,10 @@
             </form>
     </div>
     <script>
-        // Aca tengo los datos con get, no cumple ninguna funcion era para ver si podia ver los datos
-        const getData = async() => {
-            try {
-                console.log("Entra en getdata")
-                    await fetch('./productos.json')
-                        .then(response => response.json())
-                        .then(data => {
-                            console.log(data);
-                        })
-                        .catch(error => console.error("Hubo error en catch por parte del fetch" + error));
-            } catch (error) {
-                console.log("Hubo error " + error)
-            }
-        }
-        getData()
 
-
+        let dataJson = [];
         let user = null;
         let socket = null;
-        let producto = null;
-        let button_form_post = document.getElementById("button_form_post");
         let textChat = document.getElementById("text_chat");
         let sendMessage = document.getElementById("send_message");
         let form_data_user = document.getElementById("data_user");
@@ -109,13 +92,11 @@
                 window.location.reload()
             }
             socket = io();
-            socket.emit("addUser", user);
             container_chat.classList.replace("no--show", "show");
             data_user.classList.add("no--show");
             readSocket();
         })
 
-        // Trato de mandar por post los datos, los puedo visualizar por consola pero al hacer el fetch POST me da error 404 not found
         formProductos.addEventListener('submit', e => {
             e.preventDefault()
             const newPost = {
@@ -127,51 +108,51 @@
         })
 
         const sendDataPost = async (data) => {
-            console.log(JSON.stringify(data, null, 2))
             try {
-                    await fetch('./productos.json', {
-                        method: 'POST',
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-type': 'application/json'
-                        },
-                        body: JSON.stringify(data, null, 2)
-                    })
-                        .then(res => res.json())
-                        .then(data => console.log(data))
-                } catch (error) {
-                    console.log("Hubo error bro: " + error)
-                }
+                await fetch('http://localhost:3000/api/productos', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-type': 'application/json'
+                    },
+                    body: JSON.stringify(data, null, 2)
+                })
+                    .then(res => socket.emit("addProduct"))
+            } catch (error) {
+                console.log("Hubo error: " + error)
+            }
         }
 
-        // formProductos.addEventListener('submit', e => {
-        //     e.preventDefault();
-        //     producto = {
-        //         name: e.target[0].value,
-        //         price: e.target[1].value,
-        //         image: e.target[2].value
-        //     }
-        //     socket.emit("addProduct", producto);
-        // })
+        const getData = async () => {
+            try {
+                await fetch('./productos.txt')
+                    .then(response => response.json())
+                    .then(data => dataJson = data)
+                    .catch(error => console.error("Hubo error en catch por parte del fetch" + error));
+            } catch (error) {
+                console.log("Hubo error " + error)
+            }
+        }
 
         const readSocket = () => {
             loadChat();
-            socket.on('listenserver', (dataChat, dataProductos) => {
+            socket.on('listenserver', (dataChat) => {
                 writeChat(dataChat);
-                writeTable(dataProductos);
+                writeTable();
             })
         }
 
 
         const loadChat = () => {
-            socket.on("init", (dataChat, dataProductos) => {
+            socket.on("init", (dataChat) => {
                 writeChat(dataChat);
-                writeTable(dataProductos)
+                writeTable();
             })
         }
 
-        const writeTable = (dataProductos) => {
-            let inner = dataProductos.map(dato =>
+        const writeTable = async () => {
+            await getData();
+            let inner = dataJson.map(dato =>
                 `   
                     <tr>
                         <td>

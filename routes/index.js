@@ -1,13 +1,11 @@
 let express = require("express");
 let router = express.Router();
-const productos = require("../index");
+const {sendDataPost} = require("../components/controllers/dataFormController");
 
 router.get('/', (req, res, next) => {
-    res.render("form", { formularioTitle:"Formulario", productos });
+    res.render("form", { formularioTitle:"Formulario" });
 })
-router.post('/', (req, res, next) => {
-    productos.productos.push(req.body)
-    res.render("form", {formularioTitle:"Formulario", productos })
-})
+
+router.post('/api/productos', sendDataPost)
 
 module.exports = router;

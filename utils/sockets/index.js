@@ -9,13 +9,12 @@ class Socket {
         Socket.instancia = this;
         this.io = new SocketIo(http);
         this.mensajes = [];
-        this.productos = [];
     }
 
     init() {
         try {
             this.io.on('connect', socket => {
-                socket.emit("init", this.mensajes, this.productos)
+                socket.emit("init", this.mensajes)
                 
                 socket.on("chat_text", data => {
                     data = {
@@ -24,14 +23,12 @@ class Socket {
                         ...data
                     }
                     this.mensajes.push(data);
-                    this.io.sockets.emit('listenserver', this.mensajes, this.productos);
+                    this.io.sockets.emit('listenserver', this.mensajes);
                 })
 
-                socket.on('addProduct', data => {
-                    this.productos.push(data);
-                    this.io.sockets.emit('listenserver', this.mensajes, this.productos)
+                socket.on("addProduct", data => {
+                    this.io.sockets.emit('listenserver', this.mensajes);
                 })
-
             })
 
         } catch (error) {
